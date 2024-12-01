@@ -394,11 +394,47 @@ const App = () => {
         key: 'log',
         className: 'col-span-1'
       }, [
-        React 'use strict';
+        React 
+        'use strict';
 
-// ... (keep all the previous constants and form options)
+// Form options and dependencies
+const formOptions = {
+  // ... (keep all form options)
+};
 
-// UTM Log Table component
+// Components first
+const Section = ({ title, children }) => {
+  return React.createElement('div', { className: 'section mb-6' }, [
+    React.createElement('h2', { 
+      key: 'title',
+      className: 'text-lg font-medium mb-4' 
+    }, title),
+    React.createElement('div', { 
+      key: 'content',
+      className: 'bg-white rounded-lg p-6 shadow-sm' 
+    }, children)
+  ]);
+};
+
+const FormField = ({ label, value, onChange, options = [], disabled = false }) => {
+  return React.createElement('div', { className: 'mb-4' }, [
+    React.createElement('label', { 
+      key: 'label',
+      className: 'block text-sm font-medium mb-2' 
+    }, label),
+    React.createElement('select', {
+      key: 'select',
+      value: value || '',
+      onChange: e => onChange(e.target.value),
+      disabled: disabled,
+      className: 'w-full px-3 py-2 border border-gray-300 rounded text-sm'
+    }, [
+      React.createElement('option', { key: '', value: '' }, 'Select...'),
+      ...options.map(opt => React.createElement('option', { key: opt, value: opt }, opt))
+    ])
+  ]);
+};
+
 const UTMLogTable = () => {
   return React.createElement('div', { className: 'bg-white rounded-lg p-6 shadow-sm' }, [
     React.createElement('h2', { 
@@ -427,15 +463,118 @@ const UTMLogTable = () => {
   ]);
 };
 
-// Main App component structure
+// Main App component
 const App = () => {
-  // ... (keep all the previous state and handlers)
+  const [userEmail, setUserEmail] = React.useState(localStorage.getItem('userEmail'));
+  const [formData, setFormData] = React.useState({
+    market: '',
+    brand: '',
+    productCategory: '',
+    subCategory: '',
+    financialYear: '',
+    quarter: '',
+    month: '',
+    channel: '',
+    channelType: '',
+    mediaObjective: '',
+    buyType: ''
+  });
+
+  const handleChange = (field, value) => {
+    const newData = { ...formData, [field]: value };
+    // Reset dependent fields
+    switch(field) {
+      case 'market':
+        newData.brand = '';
+        break;
+      case 'productCategory':
+        newData.subCategory = '';
+        break;
+      case 'channel':
+        newData.channelType = '';
+        newData.mediaObjective = '';
+        newData.buyType = '';
+        break;
+      case 'channelType':
+        newData.mediaObjective = '';
+        newData.buyType = '';
+        break;
+    }
+    setFormData(newData);
+  };
+
+  if (!userEmail) {
+    return React.createElement('div', { className: 'min-h-screen flex items-center justify-center bg-gray-50' },
+      React.createElement('div', { className: 'max-w-md w-full p-6' }, [
+        React.createElement('h1', { 
+          key: 'title',
+          className: 'text-2xl font-bold text-center mb-4' 
+        }, 'Ultimate UTM Builder'),
+        React.createElement('form', {
+          key: 'form',
+          className: 'bg-white p-8 rounded-lg shadow-md',
+          onSubmit: e => {
+            e.preventDefault();
+            const email = new FormData(e.target).get('email');
+            if (email.endsWith('@fisherpaykel.com')) {
+              setUserEmail(email);
+              localStorage.setItem('userEmail', email);
+            } else {
+              alert('Please use a Fisher & Paykel email address');
+            }
+          }
+        }, [
+          React.createElement('input', {
+            key: 'email',
+            type: 'email',
+            name: 'email',
+            placeholder: 'Enter your F&P email',
+            className: 'w-full p-2 border rounded mb-4',
+            required: true
+          }),
+          React.createElement('button', {
+            key: 'submit',
+            type: 'submit',
+            className: 'w-full bg-blue-500 text-white p-2 rounded hover:bg-blue-600'
+          }, 'Sign In')
+        ])
+      ])
+    );
+  }
 
   return React.createElement('div', { className: 'min-h-screen bg-gray-50' }, [
-    // Header section (keep as is)
-    React.createElement('header', { /* ... */ }),
-    
-    // Main content
+    // Header
+    React.createElement('header', { 
+      key: 'header', 
+      className: 'bg-white border-b border-gray-200 mb-6'
+    },
+      React.createElement('div', { 
+        className: 'max-w-7xl mx-auto px-4 py-4 flex justify-between items-center' 
+      }, [
+        React.createElement('h1', { 
+          key: 'title', 
+          className: 'text-2xl font-semibold'
+        }, 'Ultimate UTM Builder'),
+        React.createElement('div', { 
+          key: 'user', 
+          className: 'flex items-center text-sm' 
+        }, [
+          React.createElement('span', { 
+            key: 'email',
+            className: 'text-gray-600'
+          }, userEmail),
+          React.createElement('button', {
+            key: 'logout',
+            onClick: () => {
+              setUserEmail(null);
+              localStorage.removeItem('userEmail');
+            },
+            className: 'ml-4 text-blue-600 hover:text-blue-800'
+          }, 'Sign Out')
+        ])
+      ])
+    ),
+    // Main content with side-by-side layout
     React.createElement('div', { 
       key: 'container',
       className: 'max-w-7xl mx-auto px-4 py-6'
@@ -446,34 +585,34 @@ const App = () => {
         // Left column - Form sections
         React.createElement('div', { 
           key: 'form-sections',
-          className: 'flex-grow max-w-[66.666667%]'
+          className: 'flex-grow max-w-[66%]'
         }, [
           // Campaign Organization Section
           React.createElement(Section, {
             key: 'organization',
             title: 'Campaign Organization',
-            children: [/* ... keep existing form fields ... */]
+            children: [/* your form fields */]
           }),
           
           // Campaign Timing Section
           React.createElement(Section, {
             key: 'timing',
             title: 'Campaign Timing',
-            children: [/* ... keep existing form fields ... */]
+            children: [/* your form fields */]
           }),
           
           // Campaign Details Section
           React.createElement(Section, {
             key: 'details',
             title: 'Campaign Details',
-            children: [/* ... keep existing form fields ... */]
+            children: [/* your form fields */]
           })
         ]),
         
         // Right column - UTM Log
         React.createElement('div', { 
           key: 'utm-log',
-          className: 'w-[33.333333%]'
+          className: 'w-[34%]'
         }, 
           React.createElement(UTMLogTable)
         )
