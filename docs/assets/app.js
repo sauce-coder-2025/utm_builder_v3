@@ -1,36 +1,134 @@
 'use strict';
 
-// Form options data
+// Form options and dependencies
 const formOptions = {
-  markets: ['ANZ', 'UK', 'USA', 'CA'],
-  brands: {
-    'ANZ': ['Fisher & Paykel', 'DCS'],
-    'UK': ['Fisher & Paykel'],
-    'USA': ['Fisher & Paykel', 'DCS'],
-    'CA': ['Fisher & Paykel', 'DCS']
+  markets: ['AU', 'NZ', 'US', 'UK', 'CA', 'SG', 'GBL'],
+  
+  marketBrands: {
+    'AU': ['F&P', 'Haier', 'Haier Home', 'Home Solutions', 'DCS'],
+    'NZ': ['F&P', 'Haier', 'Haier Home', 'Home Solutions'],
+    'US': ['F&P', 'DCS'],
+    'UK': ['F&P'],
+    'CA': ['F&P', 'DCS'],
+    'SG': ['F&P'],
+    'GBL': ['F&P', 'Haier', 'Haier Home', 'Home Solutions', 'DCS']
   },
+
   productCategories: [
+    'Cooling',
     'Cooking',
-    'Refrigeration',
+    'Fabrice Care',
     'Dishwashing',
-    'Laundry',
-    'Outdoor'
+    'Outdoor',
+    'Ventilation',
+    'Accessories',
+    'Promotions'
   ],
+
   subCategories: {
-    'Cooking': ['Ranges', 'Cooktops', 'Wall Ovens', 'Range Hoods'],
-    'Refrigeration': ['French Door', 'Bottom Mount', 'Integrated', 'Column'],
-    'Dishwashing': ['Single DishDrawer', 'Double DishDrawer', 'Integrated'],
-    'Laundry': ['Front Loader', 'Top Loader', 'Dryer'],
-    'Outdoor': ['Grill', 'Storage', 'Beverage']
+    'Cooling': ['Refrigeration', 'Wine', 'Chest Freezer'],
+    'Cooking': ['Ovens', 'Cooktops', 'Freestanding', 'Companions'],
+    'Fabrice Care': ['Washing Machines', 'Dryers', 'Cabinets'],
+    'Dishwashing': [],
+    'Outdoor': ['Grills', 'Carts', 'Storage'],
+    'Ventilation': [],
+    'Accessories': ['Spare Parts', 'Accessories', 'Water Filters', 'Cleaning'],
+    'Promotions': []
+  },
+
+  channels: ['Meta', 'Tiktok', 'LinkedIn', 'Pinterest', 'DV360'],
+
+  channelDependencies: {
+    'Meta': {
+      channelTypes: ['Paid Social', 'Social'],
+      mediaObjectives: ['Attract', 'Engage', 'Convert', 'Retain'],
+      buyTypes: ['Reach', 'Traffic', 'Conversion', 'Engagement']
+    },
+    'Tiktok': {
+      channelTypes: ['Paid Social', 'Social'],
+      mediaObjectives: ['Attract', 'Engage', 'Convert', 'Retain'],
+      buyTypes: ['Reach', 'Traffic', 'Conversion', 'Engagement']
+    },
+    'LinkedIn': {
+      channelTypes: ['Paid Social', 'Social'],
+      mediaObjectives: ['Attract', 'Engage', 'Convert', 'Retain'],
+      buyTypes: ['Reach', 'Traffic', 'Conversion', 'Engagement']
+    },
+    'Pinterest': {
+      channelTypes: ['Paid Social', 'Social'],
+      mediaObjectives: ['Attract', 'Engage', 'Convert', 'Retain'],
+      buyTypes: ['Reach', 'Traffic', 'Conversion', 'Engagement']
+    },
+    'DV360': {
+      channelTypes: ['Display', 'Video'],
+      mediaObjectives: ['Attract', 'Engage', 'Convert', 'Retain'],
+      buyTypes: ['Reach', 'Traffic', 'Conversion', 'Engagement']
+    }
+  },
+
+  // Months for Campaign Timing
+  months: [
+    'January', 'February', 'March', 'April', 'May', 'June',
+    'July', 'August', 'September', 'October', 'November', 'December'
+  ],
+
+  // Financial Years
+  financialYears: ['FY24', 'FY25', 'FY26'],
+
+  // Quarters
+  quarters: ['Q1', 'Q2', 'Q3', 'Q4']
+};
+
+// Abbreviation mappings
+const abbreviations = {
+  marketBrand: {
+    'AU': {
+      'F&P': 'FPAU',
+      'Haier': 'HAIAU',
+      'Haier Home': 'HHAU',
+      'Home Solutions': 'HSAU',
+      'DCS': 'DCSAU'
+    },
+    // ... rest of marketBrandAbbreviations
+  },
+  mediaObjective: {
+    'Attract': 'ATT',
+    'Engage': 'ENG',
+    'Convert': 'CON',
+    'Retain': 'RET'
+  },
+  month: {
+    'January': 'JAN',
+    'February': 'FEB',
+    'March': 'MAR',
+    'April': 'APR',
+    'May': 'MAY',
+    'June': 'JUN',
+    'July': 'JUL',
+    'August': 'AUG',
+    'September': 'SEP',
+    'October': 'OCT',
+    'November': 'NOV',
+    'December': 'DEC'
+  },
+  category: {
+    'Cooling': 'COOL',
+    'Cooking': 'COOK',
+    'Fabrice Care': 'FAB',
+    'Dishwashing': 'DISH',
+    'Outdoor': 'OUT',
+    'Ventilation': 'VENT',
+    'Accessories': 'ACC',
+    'Promotions': 'PROMO'
   }
 };
 
 // Section component
 const Section = ({ title, children }) => {
-  return React.createElement('div', { className: 'section mb-8' }, [
+  return React.createElement('div', { className: 'section mb-6' }, [
     React.createElement('h2', { 
       key: 'title',
-      className: 'text-xl font-medium mb-4' 
+      className: 'text-lg font-medium mb-4' 
     }, title),
     React.createElement('div', { 
       key: 'content',
@@ -51,35 +149,10 @@ const FormField = ({ label, value, onChange, options = [], disabled = false, cla
       value: value || '',
       onChange: e => onChange(e.target.value),
       disabled: disabled,
-      className: 'w-full px-3 py-2 border border-gray-300 rounded text-sm bg-white'
+      className: 'w-full px-3 py-2 border border-gray-300 rounded text-sm'
     }, [
       React.createElement('option', { key: '', value: '' }, 'Select...'),
       ...options.map(opt => React.createElement('option', { key: opt, value: opt }, opt))
-    ])
-  ]);
-};
-
-// UTM Log Table component
-const UTMLogTable = () => {
-  return React.createElement('div', { className: 'bg-white rounded-lg p-6 shadow-sm' }, [
-    React.createElement('h2', { 
-      key: 'title',
-      className: 'text-xl font-medium mb-4' 
-    }, 'UTM Log'),
-    React.createElement('table', { 
-      key: 'table',
-      className: 'w-full text-sm' 
-    }, [
-      React.createElement('thead', { key: 'head' }, 
-        React.createElement('tr', {}, [
-          React.createElement('th', { className: 'text-left py-2' }, 'Actions'),
-          React.createElement('th', { className: 'text-left py-2' }, 'Timestamp'),
-          React.createElement('th', { className: 'text-left py-2' }, 'Created By'),
-          React.createElement('th', { className: 'text-left py-2' }, 'Campaign'),
-          React.createElement('th', { className: 'text-left py-2' }, 'UTM URL')
-        ])
-      ),
-      React.createElement('tbody', { key: 'body' })
     ])
   ]);
 };
@@ -96,23 +169,41 @@ const App = () => {
     quarter: '',
     month: '',
     channel: '',
-    channelType: ''
+    channelType: '',
+    mediaObjective: '',
+    buyType: ''
   });
 
   const handleChange = (field, value) => {
     const newData = { ...formData, [field]: value };
+    
     // Reset dependent fields
-    if (field === 'market') newData.brand = '';
-    if (field === 'productCategory') newData.subCategory = '';
-    if (field === 'channel') newData.channelType = '';
+    switch(field) {
+      case 'market':
+        newData.brand = '';
+        break;
+      case 'productCategory':
+        newData.subCategory = '';
+        break;
+      case 'channel':
+        newData.channelType = '';
+        newData.mediaObjective = '';
+        newData.buyType = '';
+        break;
+      case 'channelType':
+        newData.mediaObjective = '';
+        newData.buyType = '';
+        break;
+    }
+    
     setFormData(newData);
   };
 
+  // Login form rendering
   if (!userEmail) {
-    // Login form JSX
     return React.createElement('div', { className: 'min-h-screen flex items-center justify-center bg-gray-50' },
       React.createElement('div', { className: 'max-w-md w-full p-6' },
-        React.createElement('h1', { className: 'text-2xl font-bold text-center mb-4' }, 'UTM Builder'),
+        React.createElement('h1', { className: 'text-2xl font-bold text-center mb-4' }, 'Ultimate UTM Builder'),
         React.createElement('form', {
           className: 'bg-white p-8 rounded-lg shadow-md',
           onSubmit: e => {
@@ -154,7 +245,7 @@ const App = () => {
       }, [
         React.createElement('h1', { 
           key: 'title', 
-          className: 'text-2xl font-bold'
+          className: 'text-2xl font-semibold'
         }, 'Ultimate UTM Builder'),
         React.createElement('div', { 
           key: 'user', 
@@ -178,89 +269,88 @@ const App = () => {
     // Main Content
     React.createElement('main', { 
       key: 'main', 
-      className: 'max-w-7xl mx-auto px-4 pb-6' 
-    },
+      className: 'max-w-7xl mx-auto px-4 pb-6 grid grid-cols-3 gap-6' 
+    }, [
+      // Left column (form sections)
       React.createElement('div', { 
-        className: 'grid grid-cols-1 lg:grid-cols-3 gap-6' 
+        key: 'form',
+        className: 'col-span-2 space-y-6'
       }, [
-        React.createElement('div', { 
-          key: 'form',
-          className: 'lg:col-span-2 space-y-6'
+        // Campaign Organization
+        React.createElement(Section, {
+          key: 'organization',
+          title: 'Campaign Organization'
         }, [
-          // Campaign Organization Section
-          React.createElement(Section, {
-            key: 'organization',
-            title: 'Campaign Organization'
-          }, [
-            React.createElement('div', { className: 'grid grid-cols-2 gap-4' }, [
-              React.createElement(FormField, {
-                key: 'market',
-                label: 'Market',
-                value: formData.market,
-                onChange: value => handleChange('market', value),
-                options: formOptions.markets
-              }),
-              React.createElement(FormField, {
-                key: 'brand',
-                label: 'Brand',
-                value: formData.brand,
-                onChange: value => handleChange('brand', value),
-                options: formData.market ? formOptions.brands[formData.market] : [],
-                disabled: !formData.market
-              })
-            ]),
-            React.createElement('div', { className: 'grid grid-cols-2 gap-4 mt-4' }, [
-              React.createElement(FormField, {
-                key: 'productCategory',
-                label: 'Product Category',
-                value: formData.productCategory,
-                onChange: value => handleChange('productCategory', value),
-                options: formOptions.productCategories
-              }),
-              React.createElement(FormField, {
-                key: 'subCategory',
-                label: 'Sub Category',
-                value: formData.subCategory,
-                onChange: value => handleChange('subCategory', value),
-                options: formData.productCategory ? formOptions.subCategories[formData.productCategory] : [],
-                disabled: !formData.productCategory
-              })
-            ])
+          React.createElement('div', { className: 'grid grid-cols-2 gap-4' }, [
+            React.createElement(FormField, {
+              key: 'market',
+              label: 'Market',
+              value: formData.market,
+              onChange: value => handleChange('market', value),
+              options: formOptions.markets
+            }),
+            React.createElement(FormField, {
+              key: 'brand',
+              label: 'Brand',
+              value: formData.brand,
+              onChange: value => handleChange('brand', value),
+              options: formData.market ? formOptions.marketBrands[formData.market] : [],
+              disabled: !formData.market
+            })
           ]),
-          // Campaign Timing Section
-          React.createElement(Section, {
-            key: 'timing',
-            title: 'Campaign Timing'
-          }, 
-            React.createElement('div', { className: 'grid grid-cols-3 gap-4' }, [
-              React.createElement(FormField, {
-                key: 'financialYear',
-                label: 'Financial Year',
-                value: formData.financialYear,
-                onChange: value => handleChange('financialYear', value),
-                options: ['FY24', 'FY25', 'FY26']
-              }),
-              React.createElement(FormField, {
-                key: 'quarter',
-                label: 'Quarter',
-                value: formData.quarter,
-                onChange: value => handleChange('quarter', value),
-                options: ['Q1', 'Q2', 'Q3', 'Q4']
-              }),
-              React.createElement(FormField, {
-                key: 'month',
-                label: 'Month',
-                value: formData.month,
-                onChange: value => handleChange('month', value),
-                options: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
-              })
-            ])
-          ),
-          // Campaign Details Section
-          React.createElement(Section, {
-            key: 'details',
-            title: 'Campaign Details'
-          }, 
+          React.createElement('div', { className: 'grid grid-cols-2 gap-4 mt-4' }, [
+            React.createElement(FormField, {
+              key: 'productCategory',
+              label: 'Product Category',
+              value: formData.productCategory,
+              onChange: value => handleChange('productCategory', value),
+              options: formOptions.productCategories
+            }),
+            React.createElement(FormField, {
+              key: 'subCategory',
+              label: 'Sub Category',
+              value: formData.subCategory,
+              onChange: value => handleChange('subCategory', value),
+              options: formData.productCategory ? formOptions.subCategories[formData.productCategory] : [],
+              disabled: !formData.productCategory
+            })
+          ])
+        ]),
+        // Campaign Timing
+        React.createElement(Section, {
+          key: 'timing',
+          title: 'Campaign Timing'
+        }, 
+          React.createElement('div', { className: 'grid grid-cols-3 gap-4' }, [
+            React.createElement(FormField, {
+              key: 'financialYear',
+              label: 'Financial Year',
+              value: formData.financialYear,
+              onChange: value => handleChange('financialYear', value),
+              options: formOptions.financialYears
+            }),
+            React.createElement(FormField, {
+              key: 'quarter',
+              label: 'Quarter',
+              value: formData.quarter,
+              onChange: value => handleChange('quarter', value),
+              options: formOptions.quarters
+            }),
+            React.createElement(FormField, {
+              key: 'month',
+              label: 'Month',
+              value: formData.month,
+              onChange: value => handleChange('month', value),
+              options: formOptions.months
+            })
+          ])
+        ),
+        // Campaign Details
+        React.createElement(Section, {
+          key: 'details',
+          title: 'Campaign Details'
+        }, 
+          React.createElement('div', { className: 'space-y-4' }, [
             React.createElement('div', { className: 'grid grid-cols-2 gap-4' }, [
               React.createElement(FormField, {
                 key: 'channel',
@@ -274,16 +364,116 @@ const App = () => {
                 label: 'Channel Type',
                 value: formData.channelType,
                 onChange: value => handleChange('channelType', value),
-                options: formData.channel ? formOptions.channelTypes[formData.channel] : [],
+                options: formData.channel ? formOptions.channelDependencies[formData.channel].channelTypes : [],
                 disabled: !formData.channel
               })
+            ]),
+            React.createElement('div', { className: 'grid grid-cols-2 gap-4' }, [
+              React.createElement(FormField, {
+                key: 'mediaObjective',
+                label: 'Media Objective',
+                value: formData.mediaObjective,
+                onChange: value => handleChange('mediaObjective', value),
+                options: formData.channel ? formOptions.channelDependencies[formData.channel].mediaObjectives : [],
+                disabled: !formData.channelType
+              }),
+              React.createElement(FormField, {
+                key: 'buyType',
+                label: 'Buy Type',
+                value: formData.buyType,
+                onChange: value => handleChange('buyType', value),
+                options: formData.channel ? formOptions.channelDependencies[formData.channel].buyTypes : [],
+                disabled: !formData.mediaObjective
+              })
             ])
-          )
-        ]),
-        // UTM Log Section
+          ])
+        )
+      ]),
+      // Right column (UTM Log)
+      React.createElement('div', { 
+        key: 'log',
+        className: 'col-span-1'
+      }, [
+        React 'use strict';
+
+// ... (keep all the previous constants and form options)
+
+// UTM Log Table component
+const UTMLogTable = () => {
+  return React.createElement('div', { className: 'bg-white rounded-lg p-6 shadow-sm' }, [
+    React.createElement('h2', { 
+      key: 'title',
+      className: 'text-lg font-medium mb-4' 
+    }, 'UTM Log'),
+    React.createElement('div', {
+      key: 'table-container',
+      className: 'overflow-x-auto'
+    }, 
+      React.createElement('table', { 
+        className: 'w-full text-sm' 
+      }, [
+        React.createElement('thead', { key: 'head' }, 
+          React.createElement('tr', {}, [
+            React.createElement('th', { className: 'text-left p-2 border-b' }, 'Actions'),
+            React.createElement('th', { className: 'text-left p-2 border-b' }, 'Timestamp'),
+            React.createElement('th', { className: 'text-left p-2 border-b' }, 'Created By'),
+            React.createElement('th', { className: 'text-left p-2 border-b' }, 'Campaign'),
+            React.createElement('th', { className: 'text-left p-2 border-b' }, 'UTM URL')
+          ])
+        ),
+        React.createElement('tbody', { key: 'body' })
+      ])
+    )
+  ]);
+};
+
+// Main App component structure
+const App = () => {
+  // ... (keep all the previous state and handlers)
+
+  return React.createElement('div', { className: 'min-h-screen bg-gray-50' }, [
+    // Header section (keep as is)
+    React.createElement('header', { /* ... */ }),
+    
+    // Main content
+    React.createElement('div', { 
+      key: 'container',
+      className: 'max-w-7xl mx-auto px-4 py-6'
+    },
+      React.createElement('div', { 
+        className: 'flex gap-6' 
+      }, [
+        // Left column - Form sections
         React.createElement('div', { 
-          key: 'log',
-          className: 'lg:col-span-1'
+          key: 'form-sections',
+          className: 'flex-grow max-w-[66.666667%]'
+        }, [
+          // Campaign Organization Section
+          React.createElement(Section, {
+            key: 'organization',
+            title: 'Campaign Organization',
+            children: [/* ... keep existing form fields ... */]
+          }),
+          
+          // Campaign Timing Section
+          React.createElement(Section, {
+            key: 'timing',
+            title: 'Campaign Timing',
+            children: [/* ... keep existing form fields ... */]
+          }),
+          
+          // Campaign Details Section
+          React.createElement(Section, {
+            key: 'details',
+            title: 'Campaign Details',
+            children: [/* ... keep existing form fields ... */]
+          })
+        ]),
+        
+        // Right column - UTM Log
+        React.createElement('div', { 
+          key: 'utm-log',
+          className: 'w-[33.333333%]'
         }, 
           React.createElement(UTMLogTable)
         )
