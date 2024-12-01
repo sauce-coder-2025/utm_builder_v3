@@ -2,10 +2,10 @@ import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 
 export default defineConfig({
-  base: './',  // Change to relative path
+  base: './',  // Use relative paths
   plugins: [react()],
   build: {
-    outDir: 'dist',
+    outDir: 'docs', // Changed from 'dist' to 'docs'
     assetsDir: 'assets',
     rollupOptions: {
       output: {
