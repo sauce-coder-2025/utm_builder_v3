@@ -19,20 +19,33 @@ const formOptions = {
   }
 };
 
-// Create a select field component without JSX
-const SelectField = ({ label, value, onChange, options, disabled }) => {
-  return React.createElement('div', { className: 'mb-4' },
-    React.createElement('label', { className: 'block text-sm font-medium text-gray-700 mb-1' }, label),
-    React.createElement('select', {
-      value: value || '',
-      onChange: e => onChange(e.target.value),
-      disabled: disabled,
-      className: 'w-full px-3 py-2 border border-gray-300 rounded-md'
-    }, [
-      React.createElement('option', { key: '', value: '' }, 'Select...'),
-      ...options.map(opt => React.createElement('option', { key: opt, value: opt }, opt))
-    ])
-  );
+// Create a select field component
+const FormField = ({ label, type = 'select', value, onChange, options = [], disabled = false, placeholder }) => {
+  return React.createElement('div', { className: 'mb-6' }, [
+    React.createElement('label', { 
+      key: 'label',
+      className: 'block text-sm font-medium mb-2' 
+    }, label),
+    type === 'select' ? 
+      React.createElement('select', {
+        key: 'input',
+        value: value || '',
+        onChange: e => onChange(e.target.value),
+        disabled: disabled,
+        className: 'w-full px-3 py-2 bg-white border border-gray-300 rounded-md text-sm'
+      }, [
+        React.createElement('option', { key: '', value: '' }, 'Select...'),
+        ...options.map(opt => React.createElement('option', { key: opt, value: opt }, opt))
+      ])
+    : React.createElement('input', {
+        key: 'input',
+        type: type,
+        value: value,
+        onChange: e => onChange(e.target.value),
+        placeholder: placeholder,
+        className: 'w-full px-3 py-2 border border-gray-300 rounded-md text-sm'
+      })
+  ]);
 };
 
 // Main App component
@@ -42,7 +55,8 @@ const App = () => {
     market: '',
     brand: '',
     channel: '',
-    channelType: ''
+    channelType: '',
+    campaignName: ''
   });
 
   const handleChange = (field, value) => {
@@ -87,32 +101,55 @@ const App = () => {
   }
 
   return React.createElement('div', { className: 'min-h-screen bg-gray-50' }, [
-    React.createElement('header', { key: 'header', className: 'bg-white shadow' },
-      React.createElement('div', { className: 'max-w-7xl mx-auto px-4 py-6 flex justify-between items-center' }, [
-        React.createElement('h1', { key: 'title', className: 'text-2xl font-bold' }, 'UTM Builder'),
-        React.createElement('div', { key: 'user', className: 'flex items-center' }, [
-          React.createElement('span', { key: 'email', className: 'mr-4' }, userEmail),
+    // Header
+    React.createElement('header', { 
+      key: 'header', 
+      className: 'bg-white border-b border-gray-200'
+    },
+      React.createElement('div', { 
+        className: 'max-w-7xl mx-auto px-4 py-3 flex justify-between items-center' 
+      }, [
+        React.createElement('h1', { 
+          key: 'title', 
+          className: 'text-xl font-medium'
+        }, 'UTM Builder'),
+        React.createElement('div', { 
+          key: 'user', 
+          className: 'flex items-center text-sm' 
+        }, [
+          React.createElement('span', { 
+            key: 'email',
+            className: 'text-gray-600'
+          }, userEmail),
           React.createElement('button', {
             key: 'logout',
             onClick: () => {
               setUserEmail(null);
               localStorage.removeItem('userEmail');
             },
-            className: 'text-blue-500 hover:text-blue-700'
+            className: 'ml-4 text-blue-600 hover:text-blue-800'
           }, 'Sign Out')
         ])
       ])
     ),
-    React.createElement('main', { key: 'main', className: 'max-w-7xl mx-auto px-4 py-6' },
-      React.createElement('div', { className: 'bg-white rounded-lg shadow p-6' }, [
-        React.createElement(SelectField, {
+    // Main Content
+    React.createElement('main', { 
+      key: 'main', 
+      className: 'max-w-7xl mx-auto px-4 py-6' 
+    },
+      React.createElement('div', { 
+        className: 'bg-white rounded-lg p-6' 
+      }, [
+        // Market
+        React.createElement(FormField, {
           key: 'market',
           label: 'Market',
           value: formData.market,
           onChange: value => handleChange('market', value),
           options: formOptions.markets
         }),
-        React.createElement(SelectField, {
+        // Brand
+        React.createElement(FormField, {
           key: 'brand',
           label: 'Brand',
           value: formData.brand,
@@ -120,20 +157,31 @@ const App = () => {
           options: formData.market ? formOptions.brands[formData.market] : [],
           disabled: !formData.market
         }),
-        React.createElement(SelectField, {
+        // Channel
+        React.createElement(FormField, {
           key: 'channel',
           label: 'Channel',
           value: formData.channel,
           onChange: value => handleChange('channel', value),
           options: formOptions.channels
         }),
-        React.createElement(SelectField, {
+        // Channel Type
+        React.createElement(FormField, {
           key: 'channelType',
           label: 'Channel Type',
           value: formData.channelType,
           onChange: value => handleChange('channelType', value),
           options: formData.channel ? formOptions.channelTypes[formData.channel] : [],
           disabled: !formData.channel
+        }),
+        // Campaign Name
+        React.createElement(FormField, {
+          key: 'campaignName',
+          label: 'Campaign Name',
+          type: 'text',
+          value: formData.campaignName,
+          onChange: value => handleChange('campaignName', value),
+          placeholder: 'Enter campaign name'
         })
       ])
     )
