@@ -75,7 +75,7 @@
     financialYears: ['FY24', 'FY25', 'FY26'],
     quarters: ['Q1', 'Q2', 'Q3', 'Q4']
   };
-  // Abbreviation mappings
+// Abbreviation mappings
   const abbreviations = {
     marketBrand: {
       'AU': {
@@ -271,8 +271,8 @@
         ])
       )
     ]);
-  }  
- // Main App Component
+  }
+// Main App Component
   function App() {
     const [userEmail, setUserEmail] = React.useState(localStorage.getItem('userEmail'));
     const [formData, setFormData] = React.useState({
@@ -385,7 +385,7 @@
         utmContent: formatUtmValue(adSetName)
       }));
     }
-  // Login Form Render
+// Login Form Render
     if (!userEmail) {
       return React.createElement('div', { className: 'min-h-screen flex items-center justify-center bg-gray-50' },
         React.createElement('div', { className: 'max-w-md w-full p-6' }, [
@@ -458,7 +458,7 @@
           ])
         ])
       ),
-      // Main content
+// Main content
       React.createElement('div', { 
         key: 'container',
         className: 'max-w-7xl mx-auto px-4 py-6'
@@ -674,7 +674,7 @@
         ])
       )
     ]);
-    }
+}
 
   // Mount the application
   const root = ReactDOM.createRoot(document.getElementById('root'));
