@@ -153,7 +153,141 @@
       'Video Views': 'VIDV'
     }
   };
+function formatUtmValue(value) {
+  if (!value) return '';
+  return value.toLowerCase()
+             .replace(/\s+/g, '_')
+             .replace(/[^a-z0-9_-]/g, '');
+}
 
+function showNotification(message) {
+  // Create notification if it doesn't exist
+  let notification = document.getElementById('notification');
+  if (!notification) {
+    notification = document.createElement('div');
+    notification.id = 'notification';
+    notification.className = 'fixed top-4 right-4 bg-white shadow-lg rounded-lg p-4 transition-opacity';
+    document.body.appendChild(notification);
+  }
+
+  // Show message
+  notification.textContent = message;
+  notification.style.opacity = '1';
+  
+  // Hide after 3 seconds
+  setTimeout(() => {
+    notification.style.opacity = '0';
+  }, 3000);
+}
+
+function generateCampaignName(formData) {
+  const {market, brand, mediaObjective, financialYear, quarter, month} = formData;
+  
+  if (!market || !brand || !mediaObjective || !financialYear || !quarter || !month) {
+    showNotification('Please fill in all required fields first');
+    return '';
+  }
+
+  const marketBrandCode = abbreviations.marketBrand[market][brand];
+  const objectiveCode = abbreviations.mediaObjective[mediaObjective];
+  const monthCode = abbreviations.month[month];
+
+  return `${marketBrandCode}_${objectiveCode}_${financialYear}_${quarter}_${monthCode}`;
+}
+
+function generateAdSetName(formData) {
+  const {mediaObjective, buyType, productCategory, subCategory} = formData;
+
+  if (!mediaObjective || !buyType) {
+    showNotification('Please select Media Objective and Buy Type first');
+    return '';
+  }
+
+  const objectiveCode = abbreviations.mediaObjective[mediaObjective];
+  const buyTypeCode = abbreviations.buyType[buyType];
+  const categoryCode = productCategory ? abbreviations.category[productCategory] || '' : '';
+  const subCategoryCode = subCategory ? '_' + (abbreviations.subCategory[subCategory] || '') : '';
+  
+  return `${objectiveCode}_${buyTypeCode}${categoryCode ? '_' + categoryCode : ''}${subCategoryCode}`;
+}
+
+// Add these state variables and functions to the App component
+function App() {
+  // ... existing state ...
+  const [utmState, setUtmState] = React.useState({
+    baseUrl: 'https://www.fisherpaykel.com',
+    utmSource: '',
+    utmMedium: '',
+    utmCampaign: '',
+    utmContent: '',
+    utmTerm: '',
+    isManualMode: false
+  });
+  
+  const [utmLog, setUtmLog] = React.useState([]);
+
+  // Add this function to handle UTM generation
+  function handleGenerateUtm() {
+    if (!utmState.baseUrl) {
+      showNotification('Please enter a Base URL');
+      return;
+    }
+
+    if (!utmState.utmSource || !utmState.utmMedium || !utmState.utmCampaign) {
+      showNotification('Please ensure Source, Medium, and Campaign fields are filled');
+      return;
+    }
+
+    try {
+      const url = new URL(utmState.baseUrl.toLowerCase());
+      
+      // Add UTM parameters
+      url.searchParams.set('utm_source', formatUtmValue(utmState.utmSource));
+      url.searchParams.set('utm_medium', formatUtmValue(utmState.utmMedium));
+      url.searchParams.set('utm_campaign', formatUtmValue(utmState.utmCampaign));
+      
+      if (utmState.utmContent) {
+        url.searchParams.set('utm_content', formatUtmValue(utmState.utmContent));
+      }
+      if (utmState.utmTerm) {
+        url.searchParams.set('utm_term', formatUtmValue(utmState.utmTerm));
+      }
+
+      // Add to UTM log
+      const newUtmEntry = {
+        id: Date.now(),
+        url: url.toString(),
+        timestamp: new Date().toLocaleString(),
+        createdBy: userEmail,
+        campaign: utmState.utmCampaign
+      };
+
+      setUtmLog(prevLog => [newUtmEntry, ...prevLog]);
+      showNotification('UTM generated and added to log');
+
+    } catch (error) {
+      showNotification('Invalid URL format. Please check the Base URL.');
+    }
+  }
+
+  // Add an auto-generation function
+  function handleAutoGenerate() {
+    if (!formData.channel || !formData.market || !formData.brand) {
+      showNotification('Please fill in required fields first');
+      return;
+    }
+
+    const campaignName = generateCampaignName(formData);
+    const adSetName = generateAdSetName(formData);
+
+    setUtmState(prev => ({
+      ...prev,
+      utmSource: formatUtmValue(formData.channel),
+      utmMedium: formatUtmValue(formData.channelType),
+      utmCampaign: formatUtmValue(campaignName),
+      utmContent: formatUtmValue(adSetName)
+    }));
+  }
   // Component functions
   function Section({ title, children }) {
     return React.createElement('div', { className: 'section mb-6' }, [
@@ -167,7 +301,83 @@
       }, children)
     ]);
   }
-
+// Add this section to your form sections array
+React.createElement(Section, {
+  key: 'utm-generation',
+  title: 'UTM Generation',
+  children: [
+    // Manual/Auto toggle
+    React.createElement('div', { className: 'flex items-center mb-4' }, [
+      React.createElement('label', {
+        className: 'flex items-center cursor-pointer'
+      }, [
+        React.createElement('input', {
+          type: 'checkbox',
+          className: 'mr-2',
+          checked: utmState.isManualMode,
+          onChange: (e) => setUtmState(prev => ({
+            ...prev,
+            isManualMode: e.target.checked
+          }))
+        }),
+        React.createElement('span', { className: 'text-sm' }, 'Manual Mode')
+      ])
+    ]),
+    
+    // UTM Fields
+    React.createElement('div', { className: 'space-y-4' }, [
+      React.createElement('div', { className: 'grid grid-cols-2 gap-4' }, [
+        // Base URL
+        React.createElement('div', { className: 'col-span-2' }, [
+          React.createElement('label', { className: 'block text-sm font-medium mb-2' }, 'Base URL'),
+          React.createElement('input', {
+            type: 'url',
+            value: utmState.baseUrl,
+            onChange: (e) => setUtmState(prev => ({ ...prev, baseUrl: e.target.value })),
+            className: 'w-full px-3 py-2 border border-gray-300 rounded text-sm',
+            placeholder: 'https://www.fisherpaykel.com'
+          })
+        ]),
+        // UTM Source
+        React.createElement('div', {}, [
+          React.createElement('label', { className: 'block text-sm font-medium mb-2' }, 'UTM Source'),
+          React.createElement('input', {
+            type: 'text',
+            value: utmState.utmSource,
+            onChange: (e) => setUtmState(prev => ({ ...prev, utmSource: e.target.value })),
+            readOnly: !utmState.isManualMode,
+            className: 'w-full px-3 py-2 border border-gray-300 rounded text-sm'
+          })
+        ]),
+        // UTM Medium
+        React.createElement('div', {}, [
+          React.createElement('label', { className: 'block text-sm font-medium mb-2' }, 'UTM Medium'),
+          React.createElement('input', {
+            type: 'text',
+            value: utmState.utmMedium,
+            onChange: (e) => setUtmState(prev => ({ ...prev, utmMedium: e.target.value })),
+            readOnly: !utmState.isManualMode,
+            className: 'w-full px-3 py-2 border border-gray-300 rounded text-sm'
+          })
+        ])
+      ]),
+      
+      // Generate Button
+      React.createElement('div', { className: 'flex justify-end space-x-4 mt-6' }, [
+        React.createElement('button', {
+          type: 'button',
+          onClick: handleAutoGenerate,
+          className: 'px-4 py-2 bg-gray-100 text-gray-700 rounded hover:bg-gray-200'
+        }, 'Auto Generate'),
+        React.createElement('button', {
+          type: 'button',
+          onClick: handleGenerateUtm,
+          className: 'px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600'
+        }, 'Generate UTM')
+      ])
+    ])
+  ]
+})
   function FormField({ label, value, onChange, options = [], disabled = false }) {
     return React.createElement('div', { className: 'mb-4' }, [
       React.createElement('label', { 
@@ -218,6 +428,16 @@
   }
 
   // Main App Component
+  const [utmState, setUtmState] = React.useState({
+  baseUrl: 'https://www.fisherpaykel.com',
+  utmSource: '',
+  utmMedium: '',
+  utmCampaign: '',
+  utmContent: '',
+  utmTerm: '',
+  isManualMode: false
+});
+  
   function App() {
     const [userEmail, setUserEmail] = React.useState(localStorage.getItem('userEmail'));
     const [formData, setFormData] = React.useState({
