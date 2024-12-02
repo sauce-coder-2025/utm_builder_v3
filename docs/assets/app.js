@@ -242,12 +242,19 @@
     ]);
   }
 
-  function UTMLogTable() {
+function UTMLogTable() {
     return React.createElement('div', { className: 'bg-white rounded-lg p-6 shadow-sm' }, [
       React.createElement('h2', { 
         key: 'title',
-        className: 'text-lg font-medium mb-4' 
-      }, 'UTM Log'),
+        className: 'text-lg font-medium mb-4 flex justify-between items-center'
+      }, [
+        React.createElement('span', { key: 'title-text' }, 'UTM Log'),
+        React.createElement('button', {
+          key: 'complete-session',
+          onClick: completeSession,
+          className: 'px-3 py-1 text-sm bg-green-500 text-white rounded hover:bg-green-600'
+        }, 'Complete Session')
+      ]),
       React.createElement('div', {
         key: 'table-container',
         className: 'overflow-x-auto'
@@ -266,12 +273,150 @@
           ),
           React.createElement('tbody', { 
             key: 'body',
-            children: [] // UTM log entries will be added dynamically
+            children: utmLog.map(entry => 
+              React.createElement('tr', { key: entry.id }, [
+                React.createElement('td', { className: 'p-2 border-b' }, [
+                  React.createElement('button', {
+                    onClick: () => copyUTM(entry.url),
+                    className: 'mr-2 text-blue-500 hover:text-blue-700'
+                  }, '💾'),
+                  React.createElement('button', {
+                    onClick: () => deleteUTM(entry.id),
+                    className: 'text-red-500 hover:text-red-700'
+                  }, '🚫')
+                ]),
+                React.createElement('td', { className: 'p-2 border-b' }, entry.timestamp),
+                React.createElement('td', { className: 'p-2 border-b' }, entry.createdBy),
+                React.createElement('td', { className: 'p-2 border-b' }, entry.campaign),
+                React.createElement('td', { 
+                  className: 'p-2 border-b truncate max-w-xs',
+                  title: entry.url
+                }, entry.url)
+              ])
+            )
           })
         ])
       )
     ]);
   }
+ // UTM Management Functions
+  function saveUTM() {
+    const utmData = {
+      ...formData,
+      timestamp: new Date().toLocaleString(),
+      creator: userEmail || 'Unknown User',
+      utmSource: utmState.utmSource,
+      utmMedium: utmState.utmMedium,
+      utmCampaign: utmState.utmCampaign,
+      utmContent: utmState.utmContent,
+      utmTerm: utmState.utmTerm,
+      utmString: generateFullUtmUrl()
+    };
+
+    if (!utmData.utmString) {
+      showNotification('Please generate a UTM URL first');
+      return;
+    }
+
+    // Check for duplicate UTM string
+    const isDuplicate = utmLog.some(entry => entry.url === utmData.utmString);
+    if (isDuplicate) {
+      showNotification('This UTM has already been saved');
+      return;
+    }
+
+    // Add to UTM log
+    setUtmLog(prevLog => [...prevLog, {
+      id: Date.now(),
+      url: utmData.utmString,
+      timestamp: utmData.timestamp,
+      createdBy: utmData.creator,
+      campaign: utmData.utmCampaign
+    }]);
+
+    showNotification('UTM saved successfully');
+  }
+
+  function copyUTM(url) {
+    navigator.clipboard.writeText(url)
+      .then(() => showNotification('UTM copied to clipboard!'))
+      .catch(err => showNotification('Failed to copy UTM: ' + err));
+  }
+
+  function deleteUTM(id) {
+    setUtmLog(prevLog => prevLog.filter(entry => entry.id !== id));
+    showNotification('UTM deleted successfully');
+  }
+
+  function clearForm() {
+    // Reset form data
+    setFormData({
+      market: '',
+      brand: '',
+      productCategory: '',
+      subCategory: '',
+      financialYear: '',
+      quarter: '',
+      month: '',
+      channel: '',
+      channelType: '',
+      mediaObjective: '',
+      buyType: ''
+    });
+
+    // Reset UTM state
+    setUtmState({
+      baseUrl: 'https://www.fisherpaykel.com',
+      utmSource: '',
+      utmMedium: '',
+      utmCampaign: '',
+      utmContent: '',
+      utmTerm: '',
+      isManualMode: false
+    });
+
+    showNotification('Form cleared');
+  }
+
+  function generateFullUtmUrl() {
+    if (!utmState.baseUrl) return '';
+
+    try {
+      const url = new URL(utmState.baseUrl.toLowerCase());
+      
+      if (utmState.utmSource) url.searchParams.set('utm_source', formatUtmValue(utmState.utmSource));
+      if (utmState.utmMedium) url.searchParams.set('utm_medium', formatUtmValue(utmState.utmMedium));
+      if (utmState.utmCampaign) url.searchParams.set('utm_campaign', formatUtmValue(utmState.utmCampaign));
+      if (utmState.utmContent) url.searchParams.set('utm_content', formatUtmValue(utmState.utmContent));
+      if (utmState.utmTerm) url.searchParams.set('utm_term', formatUtmValue(utmState.utmTerm));
+      
+      return url.toString();
+    } catch (error) {
+      showNotification('Invalid URL format');
+      return '';
+    }
+  }
+
+  // Add the save to UTM Log functionality - this will need to be modified based on your backend
+  function saveToUTMLog(data) {
+    // In the web version, we'll just keep it in local storage
+    localStorage.setItem('utmLog', JSON.stringify(data));
+    return true;
+  }
+
+  function completeSession() {
+    if (utmLog.length === 0) {
+      showNotification('No UTMs to save. Please generate and save at least one UTM before completing the session.');
+      return;
+    }
+
+    // Here you would typically send the data to your backend
+    // For now, we'll just save to local storage
+    saveToUTMLog(utmLog);
+    showNotification('Session completed and saved successfully');
+    clearForm();
+    setUtmLog([]);
+  } 
 // Main App Component
   function App() {
     const [userEmail, setUserEmail] = React.useState(localStorage.getItem('userEmail'));
